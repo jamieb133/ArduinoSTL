@@ -1,0 +1,70 @@
+#pragma once
+namespace std {
+    class RefCounter {
+    private:
+        int count;
+    public:
+        void increment() {
+            count++;
+        }
+        int decrement() {
+            return count--;
+        }
+    };
+
+    template <typename T> 
+    class shared_ptr{
+    private:
+        T*    pData;     
+        RefCounter* reference; 
+
+    public:
+        shared_ptr() : pData(0), reference(0) {
+            reference = new RefCounter();
+            reference->increment();
+        }
+
+        shared_ptr(T* pValue) : pData(pValue), reference(0) {
+            reference = new RefCounter();
+            reference->increment();
+        }
+
+        shared_ptr(const shared_ptr<T>& sp) : pData(sp.pData), reference(sp.reference) {
+            reference->increment();
+        }
+
+        ~shared_ptr() {
+            if(reference->decrement() == 0) {
+                delete pData;
+                delete reference;
+            }
+        }
+
+        T& operator* () {
+            return *pData;
+        }
+
+        T* operator-> () {
+            return pData;
+        }
+        
+        shared_ptr<T>& operator = (const shared_ptr<T>& sp) {
+            // Avoid self assignment.
+            if (this != &sp) {
+                if(reference->decrement() == 0) {
+                    delete pData;
+                    delete reference;
+                }
+
+                pData = sp.pData;
+                reference = sp.reference;
+                reference->increment();
+            }
+            return *this;
+        }
+
+        bool operator== (const shared_ptr<T>& sp) {
+            return this == &sp;
+        }
+    };
+}

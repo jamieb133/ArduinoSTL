@@ -23,6 +23,7 @@
 #include "iterator_base"
 #include "utility"
 #include "cstdio"
+#include "shared_ptr"
 
 #ifndef HEADER_STD_MEMORY
 #define HEADER_STD_MEMORY 1
