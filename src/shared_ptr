@@ -1,22 +1,46 @@
 #pragma once
+
 namespace std {
-    class RefCounter {
-    private:
-        int count;
-    public:
-        void increment() {
-            count++;
-        }
-        int decrement() {
-            return count--;
-        }
-    };
 
     template <typename T> 
     class shared_ptr{
+    public:
+        class RefCounter {
+        private:
+            int count;
+        public:
+            void increment() {
+                count++;
+            }
+            int decrement() {
+                return count--;
+            }
+        };
+
+        template<typename Y>
+        struct _ptr_and_block : RefCounter {
+            Y* _ptr;
+            explicit _ptr_and_block(Y* p) : _ptr(p) { }
+            virtual void dispose() { delete _ptr; }
+        };
+
+        template<typename Y>
+        struct _object_and_block : RefCounter
+        {
+            Y object;
+
+            template<class ... Args>
+            _object_and_block(Args && ...args) :
+                object(args...) {
+            }
+
+            virtual void dispose() {}
+        };
+
     private:
         T*    pData;     
         RefCounter* reference; 
+
 
     public:
         shared_ptr() : pData(0), reference(0) {
@@ -66,5 +90,19 @@ namespace std {
         bool operator== (const shared_ptr<T>& sp) {
             return this == &sp;
         }
+
+        T* get() {
+            return pData;
+        }
     };
+
+    // template<typename T, typename ... Args>
+    // std::shared_ptr<T> make_shared(Args && ... args) {
+    //     shared_ptr<T> ptr;
+    //     auto tmp_object = new shared_ptr<T>::_object_and_block<T>(args...);
+    //     ptr._obj_ptr = &tmp_object->object;
+    //     ptr._ref_counter = tmp_object;
+    //     return ptr;
+    // }
+    
 }
